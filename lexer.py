@@ -1,30 +1,67 @@
-from rply import LexerGenerator
+import ply.lex as lex
+
+# Lexer
+
+tokens = (
+    'VAR',
+    'IDENTIFIER',
+    'COLON',
+    'TYPE',
+    'EQUALS',
+    'INT',
+    'FLOAT',
+    'STRING',
+    'BOOL',
+    'SEMICOLON',
+)
+
+def t_SEMICOLON(t):
+    r';'
+    return t
+def t_VAR(t):
+    r'var'
+    return t
+
+def t_COLON(t):
+    r':'
+    return t
 
 
-class Lexer:
-    def __init__(self):
-        self.lexer = LexerGenerator()
+def t_TYPE(t):
+    r'int|float|string|bool'
+    return t
 
-    def _add_tokens(self):
-        # Print
-        self.lexer.add('PRINT', r'print')
-        # Parenthesis
-        self.lexer.add('OPEN_PAREN', r'\(')
-        self.lexer.add('CLOSE_PAREN', r'\)')
-        # Semi Colon
-        self.lexer.add('SEMI_COLON', r'\;')
-        # Operators
-        self.lexer.add('ADD', r'\+')
-        self.lexer.add('SUB', r'\-')
-        self.lexer.add('MUL', r'\*')
-        self.lexer.add('DIV', r'\/')
-        # Number
-        self.lexer.add('NUMBER', r'\d+')
-        # Strings
-        self.lexer.add('STRING', r'\".*\"')
-        # Ignore spaces
-        self.lexer.ignore('\s+')
+def t_EQUALS(t):
+    r'='
+    return t
 
-    def get_lexer(self):
-        self._add_tokens()
-        return self.lexer.build()
+def t_INT(t):
+    r'\d+'
+    return t
+
+def t_FLOAT(t):
+    r'\d+\.\d+'
+    return t
+
+def t_STRING(t):
+    r'"[^"]*"'
+    return t
+
+def t_BOOL(t):
+    r'True|False|true|false'
+    return t
+
+def t_IDENTIFIER(t):
+    r'[a-zA-Z_][a-zA-Z0-9_]*'
+    return t
+
+
+t_ignore = ' \t\n'
+
+def t_error(t):
+    print(f"Illegal character '{t.value[0]}'")
+    t.lexer.skip(1)
+
+
+
+lexer = lex.lex()
