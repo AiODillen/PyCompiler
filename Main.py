@@ -1,5 +1,5 @@
-from parser import parser
-from lexer import lexer
+from parser import parser, MyAst
+from lexer import lexer as lex
 import ast
 import subprocess
 
@@ -10,22 +10,22 @@ with open('Input.pp', 'r') as file:
 
 
 
-lexer.input(input_str)
+lexer = lex.input(input_str)
 
 
 # Tokenize the input
 while True:
-    tok = lexer.token()
+    tok = lex.token()
     if not tok:
         break
     print(tok)
 
-result = parser.parse(input_str)
-
+result = parser.parse(input_str, lexer=lexer)
+print(MyAst.dump(result))
 # Compile AST to bytecode
 filename = 'output.py'
 with open(filename, 'w') as file:
-    file.write(ast.unparse(result))
+    file.write(MyAst.unparse(result))
 
 # Convert Python script to exe with PyInstaller
 subprocess.run(['pyinstaller', '--onefile', filename])
