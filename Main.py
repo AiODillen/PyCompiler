@@ -21,7 +21,7 @@ while True:
     print(tok)
 
 result = parser.parse(input_str, lexer=lexer)
-print(MyAst.dump(result))
+print(MyAst.dump(result, indent=4))
 # Compile AST to bytecode
 filename = 'output.py'
 with open(filename, 'w') as file:
