@@ -1,7 +1,9 @@
-from parser import parser, MyAst
+from parser import parser
 from lexer import lexer as lex
+import marshal
+import py_compile
+import time
 import ast
-import subprocess
 
 
 # Read the Input.pp file
@@ -13,6 +15,7 @@ with open('Input.pp', 'r') as file:
 lexer = lex.input(input_str)
 
 
+
 # Tokenize the input
 while True:
     tok = lex.token()
@@ -20,12 +23,14 @@ while True:
         break
     print(tok)
 
-result = parser.parse(input_str, lexer=lexer)
-print(MyAst.dump(result, indent=4))
-# Compile AST to bytecode
-filename = 'output.py'
-with open(filename, 'w') as file:
-    file.write(MyAst.unparse(result))
+result: ast.AST = parser.parse(input_str, lexer=lexer)
+print(ast.dump(result, indent=4))
 
-# Convert Python script to exe with PyInstaller
-subprocess.run(['pyinstaller', '--onefile', filename])
+
+with open('out.py', 'w') as f:
+    f.write(ast.unparse(result))
+
+with open('out.pyc', 'wb') as fc:
+    bytecode = compile(ast.unparse(result), '', 'exec')
+    fc.write(marshal.dumps(bytecode))
+

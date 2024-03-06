@@ -7,7 +7,6 @@ import sys
 tokens = lexer.tokens
 
 statements = []
-MyAst = ast
 modules = []
 
 start = 'statements'
@@ -20,7 +19,7 @@ def p_statements(p):
 def p_statement_var(p):
     'statement : VAR IDENTIFIER COLON TYPE EQUALS value'
     print(f"VAR {p[2]} : {p[4]} = {p[6]}")
-    p[0] = modules.append(MyAst.parse(f"{p[2]} = {p[6]}").body)
+    p[0] = modules.append(ast.parse(f"{p[2]} = {p[6]}").body)
 
 
 
