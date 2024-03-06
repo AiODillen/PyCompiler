@@ -13,6 +13,7 @@ tokens = (
     'STRING',
     'BOOL',
     'SEMICOLON',
+    'PRINT',
 )
 
 def t_SEMICOLON(t):
@@ -51,9 +52,15 @@ def t_BOOL(t):
     r'True|False|true|false'
     return t
 
+def t_PRINT(t):
+    r'print'
+    return t
+
 def t_IDENTIFIER(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     return t
+
+
 
 
 t_ignore = ' \t\n'
