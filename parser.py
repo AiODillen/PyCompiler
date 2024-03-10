@@ -15,12 +15,13 @@ levels = Models.Level.Level()
 statements = []
 modules = []
 level = 0
+curr_line = 0
 
 start = 'statements'
 
 def p_statements(p):
-    '''statements : statement SEMICOLON statements
-                  | statement SEMICOLON'''
+    '''statements : statement SEMICOLON newline statements
+                  | statement SEMICOLON newline'''
     p[0] = ast.Module(body=modules, type_ignores=[])
 
 
@@ -32,8 +33,12 @@ def p_statement_error(p):
 def p_statement_var(p):
     'statement : VAR IDENTIFIER COLON TYPE EQUALS value'
 
-    print(f"VAR {p[2]} : {p[4]} = {p[6]}")
 
+
+    if not p[6]:
+        return
+
+    print(f"VAR {p[2]} : {p[4]} = {p[6]}")
     crt_var = Var.Variable(p[2], p[4], p[6])
     if levels.check_data_below_current_level(level, crt_var):
         print(f"ERROR: Variable {p[2]} already exists in current scope")
@@ -49,16 +54,16 @@ def p_value_int(p):
     if "int" == p[-2]:
         p[0] = p[1]
     else:
-        from lexer import line_counter
-        print(f"ERROR: {p[1]} is not {p[-2]}, at line {line_counter} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
+        p[0] = None
+        print(f"ERROR: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
 
 def p_value_float(p):
     '''value : FLOAT'''
     if "float" == p[-2]:
         p[0] = p[1]
     else:
-        from lexer import line_counter
-        print(f"ERROR: {p[1]} is not {p[-2]}, at line {line_counter} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
+        p[0] = None
+        print(f"ERROR: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
 
 
 def p_value_string(p):
@@ -66,8 +71,16 @@ def p_value_string(p):
     if "string" == p[-2]:
         p[0] = p[1]
     else:
-        from lexer import line_counter
-        print(f"ERROR: {p[1]} is not {p[-2]}, at line {line_counter} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
+        p[0] = None
+        print(f"ERROR: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
+
+
+def p_newline(p):
+    '''newline : NEWLINE
+               | empty'''
+    if p[1]:
+        global curr_line
+        curr_line += 1
 
 def p_error(p):
     if p:
@@ -76,6 +89,9 @@ def p_error(p):
         print("Syntax error at EOF")
         p[0] = None
 
+def p_empty(p):
+    'empty :'
+    pass
 
 def find_column(input, token):
     line_start = input.rfind('\n', 0, token.lexpos) + 1

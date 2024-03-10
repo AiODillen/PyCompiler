@@ -87,10 +87,7 @@ line_counter = 1
 # Define a rule so we can track line numbers
 def t_NEWLINE(t):
     r'\n+'
-    global line_counter
-    line_counter += 1
-    print(f"line {line_counter}")
-    t.lexer.lineno += len(t.value)
+    return t
 
 
 
