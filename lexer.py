@@ -124,7 +124,10 @@ def t_IDENTIFIER(t):
 
 line_counter = 1
 # Define a rule so we can track line numbers
-
+def t_NEWLINE(t):
+    r'\n+'
+    from parser import curr_line
+    curr_line += 1
 
 
 t_ignore = ' \t\n'

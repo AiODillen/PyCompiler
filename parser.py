@@ -2,6 +2,7 @@
 import ply.yacc as yacc
 import lexer
 import ast
+import textwrap
 import Models.Function as Func
 from Models.Level import *
 
@@ -32,25 +33,29 @@ def p_expression(p):
 def p_function(p):
     'function : FUNC IDENTIFIER COLON TYPE fn_level LPAREN parameters RPAREN LBRACE fn_block RBRACE SEMICOLON'
     print("Parsed a function")
-    print(p[10])
     if levels[0].check_data_below_current_level(p[2]):
         errors.append(f"Error: Function {p[2]} already exists in current scope")
     else:
+        statements = "\n    ".join(p[10])
         levels[0].add_data(0, p[2])
-        modules.append(ast.parse(f"def {p[2]}({p[7]}) -> {p[4]}:\n {p[10]}").body)
+        print("--\n"+p[10]+"\n--")
+        s = f"""
+def {p[2]}({p[7]}) -> {p[4]}:
+    {p[10]}
+"""
+        a = ast.parse(s)
+
+        modules.append(a.body)
     levels.pop()
 
 
 def p_fn_block(p):
-    '''fn_block : statement
-                | fn_block statement'''
+    '''fn_block : fn_block_parse
+                | fn_block fn_block_parse'''
     if len(p) == 2:
         p[0] = p[1]
     else:
-        if p[2]:
-            p[0] = p[1] + "\n" + p[2]
-        else:
-            p[0] = None
+        p[0] = p[1] + "\n    " + p[2]
 
 def p_fn_block_parse(p):
     '''fn_block_parse : VAR IDENTIFIER COLON TYPE EQUALS value SEMICOLON'''
@@ -103,6 +108,10 @@ def p_expression_var(p):
         levels[-1].add_data(levels[-1].level, p[2])
         modules.append(ast.parse(f"{p[2]} = {p[6]}").body)
 
+def p_statement_error(p):
+    'statement : error'
+    p[0] = None
+
 def p_value_int(p):
     '''value : INT'''
     if "int" == p[-2]:
@@ -133,6 +142,7 @@ def p_error(p):
         errors.append(f"Syntax error at '{p.value}. At line {curr_line} column {find_column(p.lexer.lexdata, p)}")
     else:
         errors.append("Syntax error at EOF")
+
 
 def p_empty(p):
     'empty :'
