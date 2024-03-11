@@ -1,53 +1,107 @@
 # Parser
 import ply.yacc as yacc
 import lexer
-from lexer import line_counter
 import ast
-import Models.Variable as Var
-import Models.Level
-import sys
+import Models.Function as Func
+from Models.Level import *
 
 input_string = ""
 tokens = lexer.tokens
-levels = Models.Level.Level()
-
+levels = [Level("global")]
 
 statements = []
 modules = []
-level = 0
-curr_line = 0
+curr_line = 1
+errors = []
+start = 'start'
 
-start = 'statements'
-
-def p_statements(p):
-    '''statements : statement SEMICOLON newline statements
-                  | statement SEMICOLON newline'''
+def p_start(p):
+    '''start : expressions'''
     p[0] = ast.Module(body=modules, type_ignores=[])
 
 
-def p_statement_error(p):
-    'statement : statement error'
-    print(f"Parser error: Unexpected token '{p[1]}' at line {p.lineno}, column {find_column(p.lexer.lexdata, p.slice[1])}")
+def p_expressions(p):
+    '''expressions : expression
+                | expressions expression'''
+
+def p_expression(p):
+    '''expression : function
+                | statement'''
 
 
-def p_statement_var(p):
-    'statement : VAR IDENTIFIER COLON TYPE EQUALS value'
+def p_function(p):
+    'function : FUNC IDENTIFIER COLON TYPE fn_level LPAREN parameters RPAREN LBRACE fn_block RBRACE SEMICOLON'
+    print("Parsed a function")
+    print(p[10])
+    if levels[0].check_data_below_current_level(p[2]):
+        errors.append(f"Error: Function {p[2]} already exists in current scope")
+    else:
+        levels[0].add_data(0, p[2])
+        modules.append(ast.parse(f"def {p[2]}({p[7]}) -> {p[4]}:\n {p[10]}").body)
+    levels.pop()
 
 
+def p_fn_block(p):
+    '''fn_block : statement
+                | fn_block statement'''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        if p[2]:
+            p[0] = p[1] + "\n" + p[2]
+        else:
+            p[0] = None
 
+def p_fn_block_parse(p):
+    '''fn_block_parse : VAR IDENTIFIER COLON TYPE EQUALS value SEMICOLON'''
     if not p[6]:
         return
 
     print(f"VAR {p[2]} : {p[4]} = {p[6]}")
-    crt_var = Var.Variable(p[2], p[4], p[6])
-    if levels.check_data_below_current_level(level, crt_var):
-        print(f"ERROR: Variable {p[2]} already exists in current scope")
-        sys.exit(1)
+    if levels[-1].check_data_below_current_level(p[2]):
+        errors.append(f"Error: Variable {p[2]} already exists in current scope")
+        p[0] = None
+        return
     else:
-        levels.add_data(level, crt_var)
-    p[0] = modules.append(ast.parse(f"{p[2]} = {p[6]}").body)
+        levels[-1].add_data(levels[-1].level, p[2])
+        p[0] = f"{p[2]} = {p[6]}"
+
+def p_fn_level(p):
+    'fn_level :'
+    levels.append(Level(p[-4]))
+    p[0] = None
+
+def p_parameter(p):
+    '''parameter : IDENTIFIER COLON TYPE'''
+    p[0] = p[1] + " : " + p[3]
+def p_parameters(p):
+    '''parameters : parameter
+                  | parameter COMMA parameters'''
+    print("starting params")
+    if levels[-1].check_data_below_current_level(p[1]):
+        errors.append(f"Error: Parameter {p[1]} already exists in current function. At line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}")
+        return
+    levels[-1].add_data(levels[-1].level, p[1])
+    if len(p) == 2:
+        print("parameters : IDENTIFIER COLON TYPE")
+        p[0] = p[1]
+    else:
+        print("parameters : IDENTIFIER COLON TYPE COMMA parameters")
+        p[0] = p[1] + ", " + p[3]
 
 
+def p_expression_var(p):
+    'statement : VAR IDENTIFIER COLON TYPE EQUALS value SEMICOLON'
+    if not p[6]:
+        return
+
+    print(f"VAR {p[2]} : {p[4]} = {p[6]}")
+    if levels[-1].check_data_below_current_level(p[2]):
+        errors.append(f"Error: Variable {p[2]} already exists in current scope")
+        return
+    else:
+        levels[-1].add_data(levels[-1].level, p[2])
+        modules.append(ast.parse(f"{p[2]} = {p[6]}").body)
 
 def p_value_int(p):
     '''value : INT'''
@@ -55,7 +109,7 @@ def p_value_int(p):
         p[0] = p[1]
     else:
         p[0] = None
-        print(f"ERROR: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
+        errors.append(f"Error: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
 
 def p_value_float(p):
     '''value : FLOAT'''
@@ -63,8 +117,7 @@ def p_value_float(p):
         p[0] = p[1]
     else:
         p[0] = None
-        print(f"ERROR: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
-
+        errors.append(f"Error: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
 
 def p_value_string(p):
     '''value : STRING'''
@@ -72,22 +125,14 @@ def p_value_string(p):
         p[0] = p[1]
     else:
         p[0] = None
-        print(f"ERROR: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
+        errors.append(f"Error: {p[1]} is not {p[-2]}, at line {curr_line} column {find_column(p.lexer.lexdata, p.slice[1])}, skipping statement")
 
-
-def p_newline(p):
-    '''newline : NEWLINE
-               | empty'''
-    if p[1]:
-        global curr_line
-        curr_line += 1
 
 def p_error(p):
     if p:
-        print(f"Syntax error at '{p.value}'")
+        errors.append(f"Syntax error at '{p.value}. At line {curr_line} column {find_column(p.lexer.lexdata, p)}")
     else:
-        print("Syntax error at EOF")
-        p[0] = None
+        errors.append("Syntax error at EOF")
 
 def p_empty(p):
     'empty :'
@@ -97,7 +142,5 @@ def find_column(input, token):
     line_start = input.rfind('\n', 0, token.lexpos) + 1
     return (token.lexpos - line_start) + 1
 
-
-
-parser = yacc.yacc()
+parser = yacc.yacc(debug=True)
 

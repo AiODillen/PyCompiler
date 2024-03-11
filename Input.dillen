@@ -1,3 +1,8 @@
-var y: int = 5;
-var x: string = -1.2;
-var z: int = 3.5;
+
+
+func test : int (y:int){
+var x:int = 1;
+var d:int = 4;
+};
+
+

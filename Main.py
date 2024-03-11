@@ -1,6 +1,6 @@
 import subprocess
 
-from parser import parser, input_string
+from parser import parser, errors
 from lexer import lexer as lex
 import marshal
 import ast
@@ -34,9 +34,21 @@ if __name__ == '__main__':
         print(tok)
 
     parser.input_string = input_str
-    result: ast.AST = parser.parse(input_str, lexer=lexer, tracking=True)
+    result: ast.AST = parser.parse(input=input_str, lexer=lexer)
+
+    if result is None:
+        exit("Ast is none")
     print(ast.dump(result, indent=4))
 
+    # Print the errors
+    if len(errors) > 0:
+        print("\nErrors:")
+        print("---------")
+        for error in errors:
+            print(error)
+        print("---------")
+
+    # Write the AST to the file
     with open(file_path, 'w') as f:
         f.write(ast.unparse(result))
 

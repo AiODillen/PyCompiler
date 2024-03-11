@@ -7,6 +7,7 @@ tokens = (
     'NEWLINE',
     # Keywords
     'VAR',
+    'FUNC',
     # Identifiers
     'IDENTIFIER',
     'TYPE',
@@ -14,6 +15,13 @@ tokens = (
     'COLON',
     'EQUALS',
     'SEMICOLON',
+    'RPAREN',
+    'LPAREN',
+    'RBRACKET',
+    'LBRACKET',
+    'RBRACE',
+    'LBRACE',
+    'COMMA',
     # Types
     'INT',
     'FLOAT',
@@ -23,6 +31,7 @@ tokens = (
     'DICT',
     # Functions
     'PRINT',
+
 
 )
 
@@ -34,8 +43,40 @@ def t_VAR(t):
     r'var'
     return t
 
+def t_FUNC(t):
+    r'func'
+    return t
+
+def t_LPAREN(t):
+    r'\('
+    return t
+
+def t_RPAREN(t):
+    r'\)'
+    return t
+
+def t_LBRACKET(t):
+    r'\['
+    return t
+
+def t_RBRACKET(t):
+    r'\]'
+    return t
+
+def t_LBRACE(t):
+    r'\{'
+    return t
+
+def t_RBRACE(t):
+    r'\}'
+    return t
+
 def t_COLON(t):
     r':'
+    return t
+
+def t_COMMA(t):
+    r','
     return t
 
 def t_EQUALS(t):
@@ -55,8 +96,6 @@ def t_FLOAT(t):
 def t_INT(t):
     r'-?\d+'
     return t
-
-
 
 def t_STRING(t):
     r'"[^"]*"'
@@ -85,13 +124,10 @@ def t_IDENTIFIER(t):
 
 line_counter = 1
 # Define a rule so we can track line numbers
-def t_NEWLINE(t):
-    r'\n+'
-    return t
 
 
 
-t_ignore = ' \t'
+t_ignore = ' \t\n'
 
 def t_error(t):
     print(f"Illegal character '{t.value[0]}'")
@@ -99,5 +135,5 @@ def t_error(t):
 
 
 
-lexer = lex.lex(debug=True)
+lexer = lex.lex()
 
