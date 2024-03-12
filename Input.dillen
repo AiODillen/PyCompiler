@@ -1,8 +1,10 @@
+var x:int = 4;
+var x:str = "sdfr";
+print(x);
 
-func test : int (y:int){
-var c:int = 1;
-var l:int = 4;
-var s:string = "s";
+func test: str (c:int, v:str) {
+    var k:float = 3.2;
+    if (1 == 2) {
+        var d:int = 3;
+    };
 };
-
-

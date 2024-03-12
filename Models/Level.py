@@ -21,5 +21,12 @@ class Level:
                 return True
         return False
 
+    def get_data(self, data_name: str):
+        # Return the data with the specified name
+        for level in self.levels:
+            if data_name in self.levels[level]:
+                if isinstance(self.levels[level][self.levels[level].index(data_name)], Var.Variable):
+                    return self.levels[level][self.levels[level].index(data_name)]
+        return None
     def __str__(self):
         return f"Level({self.name}, {self.level}, {self.levels})"

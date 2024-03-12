@@ -25,6 +25,9 @@ if __name__ == '__main__':
         input_str = file.read()
 
     lexer = lex.input(input_str)
+    x = lex.lineno
+
+    print(lex.lineno)
 
     # Tokenize the input
     while True:
@@ -34,11 +37,9 @@ if __name__ == '__main__':
         print(tok)
 
     parser.input_string = input_str
-    result: ast.AST = parser.parse(input=input_str, lexer=lexer)
+    result: ast.AST = parser.parse(input=input_str, lexer=lex)
 
-    if result is None:
-        exit("Ast is none")
-    print(ast.dump(result, indent=4))
+
 
     # Print the errors
     if len(errors) > 0:
@@ -47,6 +48,12 @@ if __name__ == '__main__':
         for error in errors:
             print(error)
         print("---------")
+
+
+    if result is None:
+        exit("Ast is none")
+    print(ast.dump(result, indent=4))
+
 
     # Write the AST to the file
     with open(file_path, 'w') as f:

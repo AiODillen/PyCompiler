@@ -15,6 +15,4 @@ class Function:
         return f"Function({self.name}, {self.parameters}, {self.return_type}, {self.body})"
 
     def __eq__(self, other):
-        if not isinstance(other, Function):
-            return False
         return self.name == other.name
