@@ -211,6 +211,14 @@ def p_atom_int(p):
 def p_atom_float(p):
     '''value_atom : FLOAT'''
     p[0] = "float;" + p[1]
+
+def p_atom_bool(p):
+    '''value_atom : BOOL'''
+    p[0] = "bool;" + p[1]
+
+def p_atom_dict(p):
+    '''value_atom : DICT'''
+    p[0] = "dict;" + p[1]
 def p_atom_str(p):
     '''value_atom : STR'''
     p[0] = "str;" + p[1]
