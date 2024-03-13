@@ -186,7 +186,7 @@ def p_assign_var(p):
     else:
         levels[-1].add_data(levels[-1].level, Var.Variable(p[2], p[4], value))
         if value_type == "str":
-            modules.append(ast.parse(f"{p[2]} = \"{value}\"").body)
+            modules.append(ast.parse(f"{p[2]} = \'{value}\'").body)
         else:
             modules.append(ast.parse(f"{p[2]} = {value}").body)
 

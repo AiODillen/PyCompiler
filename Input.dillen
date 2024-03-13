@@ -1,6 +1,13 @@
-var x:int = 4;
-var x:str = "sdfr";
-print(x);
+var x:str = "sdf";
+var y:int = 3;
+var z:float = 3.3;
+var u:int = 3.3;
+var l:list = [1, 2, 3, 4]
+
+var m:int = 2+5;
+var s:str = "Hello" + "World";
+
+print(s);
 
 func test: str (c:int, v:str) {
     var k:float = 3.2;

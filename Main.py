@@ -50,9 +50,9 @@ if __name__ == '__main__':
         print("---------")
 
 
-    if result is None:
-        exit("Ast is none")
-    print(ast.dump(result, indent=4))
+    #if result is None:
+    #    exit("Ast is none")
+    #print(ast.dump(result, indent=4))
 
 
     # Write the AST to the file
