@@ -2,6 +2,7 @@
 # Setup
 
 - Clone the Repository
+- Python 3.12 is recommended
 
 # Running the Compiler
 
